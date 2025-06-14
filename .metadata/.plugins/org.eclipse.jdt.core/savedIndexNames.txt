@@ -1,0 +1,9 @@
+INDEX VERSION 1.134+D:\java_ws_LSH_20250512_202145071\java_ws_LSH_20250407\.metadata\.plugins\org.eclipse.jdt.core
+879918302.index
+1865797976.index
+3027594439.index
+2422712741.index
+390469867.index
+670856435.index
+3380705583.index
+712673515.index

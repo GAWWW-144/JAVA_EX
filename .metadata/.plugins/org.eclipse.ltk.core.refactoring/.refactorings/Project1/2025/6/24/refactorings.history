@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Encapsulate field &apos;Bank.AccountFrame.tfName&apos; in &apos;Bank.AccountFrame&apos;&#x0D;&#x0A;- Original project: &apos;Project1&apos;&#x0D;&#x0A;- Original element: &apos;Bank.AccountFrame.tfName&apos;&#x0D;&#x0A;- Getter method name: &apos;getTfName&apos;&#x0D;&#x0A;- Setter method name: &apos;setTfName&apos;&#x0D;&#x0A;- Field visibility: &apos;public&apos;&#x0D;&#x0A;- Use getter and setter methods in declaring type" comments="false" declaring="true" description="Encapsulate field &apos;tfName, ...&apos;" flags="589830" getter="getTfName" id="org.eclipse.jdt.ui.self.encapsulate" input="/src=/optional=/true=/=/maven.pomderived=/true=/&lt;Bank{AccountFrame.java[AccountFrame^tfName" insertion="4" setter="setTfName" stamp="1749901236996" version="1.0" visibility="1"/>
+</session>

@@ -1,0 +1,183 @@
+package Bank;
+
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.NumberFormat;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+
+/**
+ * 이체 화면입니다.
+ * 성공 시 보내는 사람과 받는 사람 모두의 transactions 테이블에 거래 내역을 기록합니다.
+ */
+public class TransferFrame extends JFrame {
+    
+    // ... (기존 멤버 변수들)
+    private static final long serialVersionUID = 1L;
+    private JPanel contentPane;
+    private JTextField tfRecipientAccount;
+    private JTextField tfAmount;
+    private JLabel lblRecipientName;
+    private JButton btnTransfer;
+    
+    private AccountFrame parentFrame; 
+    private String senderAccountNumber; 
+    private String recipientName = null;
+
+    public TransferFrame(AccountFrame parentFrame, String senderAccountNumber) {
+        // ... (생성자 앞부분은 동일)
+        this.parentFrame = parentFrame;
+        this.senderAccountNumber = senderAccountNumber;
+        
+        setIconImage(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB_PRE));
+
+        setTitle("계좌이체");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setBounds(250, 250, 450, 300);
+        contentPane = new JPanel();
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        setContentPane(contentPane);
+        contentPane.setLayout(null);
+
+        setupComponents();
+    }
+    
+    private void setupComponents() {
+        // ... (UI 컴포넌트 설정은 이전과 동일)
+        JLabel lblRecipient = new JLabel("받는 분 계좌번호 :");
+        lblRecipient.setFont(new Font("굴림", Font.PLAIN, 14));
+        lblRecipient.setBounds(30, 40, 130, 25);
+        contentPane.add(lblRecipient);
+
+        tfRecipientAccount = new JTextField();
+        tfRecipientAccount.setFont(new Font("굴림", Font.PLAIN, 14));
+        tfRecipientAccount.setBounds(170, 40, 150, 25);
+        contentPane.add(tfRecipientAccount);
+
+        JButton btnCheckRecipient = new JButton("수취인 조회");
+        btnCheckRecipient.setFont(new Font("굴림", Font.PLAIN, 12));
+        btnCheckRecipient.setBounds(330, 40, 95, 25);
+        contentPane.add(btnCheckRecipient);
+        
+        lblRecipientName = new JLabel("받는 분 :");
+        lblRecipientName.setFont(new Font("굴림", Font.BOLD, 14));
+        lblRecipientName.setBounds(30, 80, 300, 25);
+        contentPane.add(lblRecipientName);
+
+        JLabel lblAmount = new JLabel("이체 금액 :");
+        lblAmount.setFont(new Font("굴림", Font.PLAIN, 14));
+        lblAmount.setBounds(30, 130, 130, 25);
+        contentPane.add(lblAmount);
+
+        tfAmount = new JTextField();
+        tfAmount.setFont(new Font("굴림", Font.PLAIN, 14));
+        tfAmount.setBounds(170, 130, 150, 25);
+        contentPane.add(tfAmount);
+
+        btnTransfer = new JButton("이체 실행");
+        btnTransfer.setFont(new Font("굴림", Font.BOLD, 16));
+        btnTransfer.setBounds(150, 190, 150, 40);
+        btnTransfer.setEnabled(false); 
+        contentPane.add(btnTransfer);
+        
+        btnCheckRecipient.addActionListener(e -> checkRecipient());
+        btnTransfer.addActionListener(e -> executeTransfer());
+    }
+
+    private void checkRecipient() {
+        // ... (수취인 조회 로직은 이전과 동일)
+        String recipientAccount = tfRecipientAccount.getText();
+        if (recipientAccount.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "계좌번호를 입력해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String sql = "SELECT name FROM users WHERE account_number = ?";
+        try (ResultSet rs = DB.executeQuery(sql, recipientAccount)) {
+            if (rs != null && rs.next()) {
+                this.recipientName = rs.getString("name");
+                lblRecipientName.setText("받는 분 : " + this.recipientName);
+                btnTransfer.setEnabled(true);
+            } else {
+                JOptionPane.showMessageDialog(this, "존재하지 않는 계좌번호입니다.", "조회 실패", JOptionPane.ERROR_MESSAGE);
+                lblRecipientName.setText("받는 분 :");
+                this.recipientName = null;
+                btnTransfer.setEnabled(false);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "DB 조회 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void executeTransfer() {
+        // ... (금액 확인, 최종 확인창 로직은 동일)
+        long amount;
+        try {
+            amount = Long.parseLong(tfAmount.getText());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "금액을 숫자로 입력해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String confirmMsg = String.format("%s님에게 %s원을 보내시겠습니까?", recipientName, NumberFormat.getInstance().format(amount));
+        int choice = JOptionPane.showConfirmDialog(this, confirmMsg, "이체 확인", JOptionPane.YES_NO_OPTION);
+
+        if (choice == JOptionPane.YES_OPTION) {
+            try {
+                // 1. 보내는 사람 잔액 확인
+                ResultSet rsSender = DB.executeQuery("SELECT balance FROM accounts WHERE account_number = ?", senderAccountNumber);
+                if (rsSender == null || !rsSender.next()) {
+                    JOptionPane.showMessageDialog(this, "보내는 분의 계좌 정보를 찾을 수 없습니다.", "오류", JOptionPane.ERROR_MESSAGE); return;
+                }
+                long senderBalance = rsSender.getLong("balance");
+                if (senderBalance < amount) {
+                    JOptionPane.showMessageDialog(this, "잔액이 부족합니다.", "이체 실패", JOptionPane.ERROR_MESSAGE); return;
+                }
+
+                // 2. 받는 사람 현재 잔액 확인 (거래기록용)
+                String recipientAccountNumber = tfRecipientAccount.getText();
+                ResultSet rsRecipient = DB.executeQuery("SELECT balance FROM accounts WHERE account_number = ?", recipientAccountNumber);
+                 if (rsRecipient == null || !rsRecipient.next()) {
+                    JOptionPane.showMessageDialog(this, "받는 분의 계좌 정보를 찾을 수 없습니다.", "오류", JOptionPane.ERROR_MESSAGE); return;
+                }
+                long recipientBalance = rsRecipient.getLong("balance");
+                
+                long senderNewBalance = senderBalance - amount;
+                long recipientNewBalance = recipientBalance + amount;
+
+                // 3. 실제 계좌 잔액 업데이트
+                DB.executeUpdate("UPDATE accounts SET balance = ? WHERE account_number = ?", senderNewBalance, senderAccountNumber);
+                DB.executeUpdate("UPDATE accounts SET balance = ? WHERE account_number = ?", recipientNewBalance, recipientAccountNumber);
+
+                // 4. 거래 내역 기록 (보내는 사람)
+                String senderMemo = recipientName + "에게 이체";
+                DB.executeUpdate("INSERT INTO transactions (account_number, transaction_type, amount, balance_after, memo) VALUES (?, ?, ?, ?, ?)",
+                        senderAccountNumber, "이체", amount, senderNewBalance, senderMemo);
+                
+                // 5. 거래 내역 기록 (받는 사람)
+                String senderName = parentFrame.getTfName().getText(); // 보내는 사람 이름 가져오기
+                String recipientMemo = senderName + "에게서 입금";
+                DB.executeUpdate("INSERT INTO transactions (account_number, transaction_type, amount, balance_after, memo) VALUES (?, ?, ?, ?, ?)",
+                        recipientAccountNumber, "입금", amount, recipientNewBalance, recipientMemo);
+
+                JOptionPane.showMessageDialog(this, "이체가 완료되었습니다.", "성공", JOptionPane.INFORMATION_MESSAGE);
+                parentFrame.refreshBalance();
+                dispose();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "이체 처리 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+}
