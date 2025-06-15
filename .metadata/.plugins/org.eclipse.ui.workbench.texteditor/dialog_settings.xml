@@ -4,10 +4,21 @@
 	<section name="java.lang.Class">
 		<item key="replaceBarOpen" value="false"/>
 		<list key="findhistory">
+			<item value="next"/>
+			<item value="executeTransfer()"/>
+			<item value="exc"/>
+			<item value="parentFrame"/>
+			<item value="parentFrame.refreshBalance()"/>
+			<item value="transferFrame\"/>
+			<item value="refreshBalance()"/>
+			<item value="name"/>
+			<item value="String senderAccountNumber"/>
+			<item value="public void refreshBalance()"/>
+			<item value="ublic void refreshBalance()"/>
+			<item value="tran"/>
 			<item value="ic"/>
 			<item value="icon"/>
 			<item value="setIconImage"/>
-			<item value="url"/>
 		</list>
 	</section>
 </section>

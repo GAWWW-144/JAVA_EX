@@ -47,6 +47,7 @@ public class HistoryFrame extends JFrame {
         // 이것이 바로 MVC(Model-View-Controller) 패턴의 Model과 View를 분리하는 과정입니다.
         String[] columnNames = {"거래일시", "거래유형", "거래금액", "거래후잔액", "메모"};
         tableModel = new DefaultTableModel(columnNames, 0) {
+            // 테이블의 셀을 직접 수정할 수 없도록 설정
             @Override
             public boolean isCellEditable(int row, int column) {
                return false;

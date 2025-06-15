@@ -120,7 +120,7 @@ public class TransferFrame extends JFrame {
     }
 
     private void executeTransfer() {
-      
+        // ... (금액 확인, 최종 확인창 로직은 동일)
         long amount;
         try {
             amount = Long.parseLong(tfAmount.getText());

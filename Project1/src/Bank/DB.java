@@ -24,7 +24,6 @@ public class DB {
             Class.forName("com.mysql.cj.jdbc.Driver");
             
             // 데이터베이스 연결
-            // 자신의 MySQL 환경에 맞게 URL, 사용자 이름, 비밀번호를 수정하세요.
             conn = DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/bank_db?serverTimezone=UTC&useUniCode=yes&characterEncoding=UTF-8",
                     "root", // MySQL 사용자 이름
